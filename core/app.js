@@ -6,23 +6,20 @@ const logger = require('morgan');
 const session = require('express-session');
 const passport = require('passport');
 const LocalStrategy = require('passport-local').Strategy;
-const mongoose = require('mongoose');
-const User = require('./models/user');
-const {connect} = require('./mongooseConnection');
+const con = require("./mysqlConnection");
+// const User = require('./models/user');
 
-// Connect to MongoDB (adjust your connection string)
-connect()
 
 // routers
 const indexRouter = require('./routes');
-const dictionaryRouter = require('./routes/dictionary');
+// const dictionaryRouter = require('./routes/dictionary');
 const searchRoutes = require('./routes/search');
 const constructionRoutes = require('./routes/construction');
-const {downloadRouter} = require('./routes/download');
+// const {downloadRouter} = require('./routes/download');
 const {resultsRoutes} = require('./routes/results');
 const instructionsRouter = express.Router().get('/', (req, res) => {res.render('instructions.pug')});
 const aboutRoutes = express.Router().get('/', (req, res) => {res.render('about')});
-const adminRoutes = require('./routes/admin');
+// const adminRoutes = require('./routes/admin');
 
 const app = express();
 
@@ -43,6 +40,12 @@ app.use(session({
   saveUninitialized: false,
   cookie: { maxAge: 24 * 60 * 60 * 1000 } // 24 hours
 }));
+
+
+/***************************************************************
+ * removing the entire user authentication model for now
+ * gonna rebuild it from the ground up
+ * this is gonna suck
 
 // Initialize Passport
 app.use(passport.initialize());
@@ -91,23 +94,24 @@ const isAuthenticated = (req, res, next) => {
   }
   res.redirect('/login');
 };
+***************************************************************/
 
 //public routes
 app.use('/', indexRouter);
 app.use('/construction', constructionRoutes);
 app.use('/about', aboutRoutes);
-app.use('/login', require('./routes/auth'));
+// app.use('/login', require('./routes/auth'));
 
 //protected routes
 // todo: some of these SHOULD be protected, but are not for convenience
-app.use('/dictionary', dictionaryRouter);
-app.use('/search', isAuthenticated, searchRoutes);
+// app.use('/dictionary', dictionaryRouter);
+app.use('/search', searchRoutes);
 app.use('/results', resultsRoutes);
-app.use('/instructions', isAuthenticated, instructionsRouter);
-app.use('/download', isAuthenticated, downloadRouter);
+app.use('/instructions', instructionsRouter);
+// app.use('/download', downloadRouter);
 
 // Admin routes (protected)
-app.use('/admin', isAuthenticated, adminRoutes);
+// app.use('/admin', adminRoutes);
 
 // catch 404 and forward to error handler
 app.use(function(req, res, next) {
@@ -126,8 +130,8 @@ app.use(function(err, req, res, next) {
 });
 
 // initialize plugins
-const loadPlugins = require('./pluginLoader');
-const PluginInterface = require('./pluginInterface');
-const plugins = loadPlugins(PluginInterface);
+// const loadPlugins = require('./pluginLoader');
+// const PluginInterface = require('./pluginInterface');
+// const plugins = loadPlugins(PluginInterface);
 
 module.exports = app;

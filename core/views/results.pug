@@ -15,7 +15,7 @@ block content
             .card.mb-3
                 .card-body
                     h5.card-title
-                        a(href=`/dictionary/${result.common_id}`) !{result.root}
-                    p.card-text !{result.meaning}
+                        a(href=`/dictionary/${result.rt_master_id}`) !{result.rt_shape}
+                    p.card-text !{result.rt_meaning}
     else
         p.text-center No results found.

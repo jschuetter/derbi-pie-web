@@ -1,6 +1,5 @@
 const express = require('express');
 const router = express.Router();
-const { MongoClient } = require('mongodb');
 const {searchID} = require("./results");
 
 const uri = 'mongodb://localhost:27017';

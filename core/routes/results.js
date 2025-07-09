@@ -1,8 +1,8 @@
 const express = require('express');
 const router = express.Router();
+const mysql = require('mysql2');
+const con = require('../mysqlConnection')
 const fs = require("fs");
-const pluginManager = require('../pluginManager');
-const {client, dbName} = require("../mongoConnection");
 
 // entry point for the code
 router.get('/', async (req, res) => {
@@ -17,11 +17,11 @@ router.get('/', async (req, res) => {
         }
         let searchResults = await getResults(req.query)
 
-        // if there is a single result, we redirect to it
-        if (searchResults.length === 1) {
-            res.redirect(`/dictionary/${encodeURIComponent(searchResults[0].common_id)}`);
-            return
-        }
+        // // if there is a single result, we redirect to it
+        // if (searchResults.length === 1) {
+        //     res.redirect(`/dictionary/${encodeURIComponent(searchResults[0].common_id)}`);
+        //     return
+        // }
 
         // Render the search results page
         res.render('results', {results: searchResults, queryString: queryString ? `?${queryString}` : '', renderIndex: special});
@@ -35,6 +35,17 @@ router.get('/', async (req, res) => {
 async function getResults(data){
     // Perform the database query to retrieve search results
     let searchResults = []
+
+    console.log("Search for:");
+    console.log(data);
+
+    const [results, fields] = await con.promise().query(
+        'SELECT * FROM rt_master WHERE rt_shape = "'+data.search+'"',
+    );
+
+    console.log(results)
+
+    return results
 
     // switch between a regular search and an advanced search. regular search is default.
     if (data && data.submit && data.submit === "advanced"){
@@ -124,6 +135,10 @@ function patternedRegex(pseudoRegex) {
 }
 // endregion
 
+/********************************************
+ * disabling advanced search for now
+ 
+
 // region search functions
 async function pluginSearch(data){
     // pass the data to each plugin.
@@ -187,5 +202,7 @@ function getRootMeaningQuery(searchString) {
     return {"meaning": {"$regex": searchRegex, "$options": "i"}}
 }
 // endregion
+
+********************************************/
 
 module.exports = {resultsRoutes: router, getResults, searchID, searchIDs};
