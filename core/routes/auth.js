@@ -1,7 +1,8 @@
 const express = require('express');
+const User = require('../user');
+const con = require("../mysqlConnection");
 const passport = require('passport');
-const User = require('../models/user');
-const InviteCode = require('../models/inviteCode');
+
 const router = express.Router();
 
 // Login form
@@ -48,36 +49,25 @@ router.post('/register', async (req, res) => {
     const { username, password, inviteCode } = req.body;
 
     // Check if invite code exists and is not used
-    const code = await InviteCode.findOne({ code: inviteCode, isUsed: false });
-    if (!code) {
+    if(!await User.getInviteCode(inviteCode)) {
       return res.render('register', {
         title: 'Register',
         error: 'Invalid or already used invite code.'
       });
     }
 
-    // Create new user
-    const user = new User({
-      username,
-      password,
-      inviteCode: inviteCode
-    });
-
-    await user.save();
-
-    // Mark invite code as used
-    code.usedBy = user._id;
-    code.isUsed = true;
-    await code.save();
+    await User.createUser(username, password);
+    await User.deleteInviteCode(inviteCode);
 
     res.redirect('/login');
   } catch (error) {
     console.error('Registration error:', error);
     res.render('register', {
       title: 'Register',
-      error: 'Registration failed. Username may already exist.'
+      error: error
     });
   }
+
 });
 
 module.exports = router;

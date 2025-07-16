@@ -7,7 +7,7 @@ const session = require('express-session');
 const passport = require('passport');
 const LocalStrategy = require('passport-local').Strategy;
 const con = require("./mysqlConnection");
-// const User = require('./models/user');
+const User = require('./user');
 
 
 // routers
@@ -42,10 +42,10 @@ app.use(session({
 }));
 
 
-/***************************************************************
- * removing the entire user authentication model for now
- * gonna rebuild it from the ground up
- * this is gonna suck
+// **************************************************************
+//  * removing the entire user authentication model for now
+//  * gonna rebuild it from the ground up
+//  * this is gonna suck
 
 // Initialize Passport
 app.use(passport.initialize());
@@ -55,10 +55,10 @@ app.use(passport.session());
 passport.use(new LocalStrategy(
   async (username, password, done) => {
     try {
-      const user = await User.findOne({ username: username });
+      const user = await User.getUser(username);
       if (!user) return done(null, false, { message: 'Incorrect username or password' });
 
-      const isMatch = await user.comparePassword(password);
+      const isMatch = await User.comparePassword(user, password);
       if (!isMatch) return done(null, false, { message: 'Incorrect username or password' });
 
       return done(null, user);
@@ -70,12 +70,12 @@ passport.use(new LocalStrategy(
 
 // Serialize and deserialize user
 passport.serializeUser((user, done) => {
-  done(null, user.id);
+  done(null, user.userid);
 });
 
 passport.deserializeUser(async (id, done) => {
   try {
-    const user = await User.findById(id);
+    const user = await User.getUserByID(id);
     done(null, user);
   } catch (err) {
     done(err);
@@ -94,21 +94,21 @@ const isAuthenticated = (req, res, next) => {
   }
   res.redirect('/login');
 };
-//*************************************************************/
+//************************************************************
 
 //public routes
 app.use('/', indexRouter);
 app.use('/construction', constructionRoutes);
 app.use('/about', aboutRoutes);
-// app.use('/login', require('./routes/auth'));
+app.use('/login', require('./routes/auth'));
 
 //protected routes
 // todo: some of these SHOULD be protected, but are not for convenience
-app.use('/dictionary', dictionaryRouter);
-app.use('/search', searchRoutes);
-app.use('/results', resultsRoutes);
-app.use('/instructions', instructionsRouter);
-// app.use('/download', downloadRouter);
+app.use('/dictionary', isAuthenticated, dictionaryRouter);
+app.use('/search', isAuthenticated, searchRoutes);
+app.use('/results', isAuthenticated, resultsRoutes);
+app.use('/instructions', isAuthenticated, instructionsRouter);
+// app.use('/download', isAuthenticated, downloadRouter);
 
 // Admin routes (protected)
 // app.use('/admin', adminRoutes);
