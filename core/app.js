@@ -12,7 +12,7 @@ const con = require("./mysqlConnection");
 
 // routers
 const indexRouter = require('./routes');
-// const dictionaryRouter = require('./routes/dictionary');
+const dictionaryRouter = require('./routes/dictionary');
 const searchRoutes = require('./routes/search');
 const constructionRoutes = require('./routes/construction');
 // const {downloadRouter} = require('./routes/download');
@@ -94,7 +94,7 @@ const isAuthenticated = (req, res, next) => {
   }
   res.redirect('/login');
 };
-***************************************************************/
+//*************************************************************/
 
 //public routes
 app.use('/', indexRouter);
@@ -104,7 +104,7 @@ app.use('/about', aboutRoutes);
 
 //protected routes
 // todo: some of these SHOULD be protected, but are not for convenience
-// app.use('/dictionary', dictionaryRouter);
+app.use('/dictionary', dictionaryRouter);
 app.use('/search', searchRoutes);
 app.use('/results', resultsRoutes);
 app.use('/instructions', instructionsRouter);

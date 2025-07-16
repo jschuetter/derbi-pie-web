@@ -3,7 +3,7 @@ import sqlalchemy as sql
 
 # files to process
 files = ['lex_master', 'rt_master', 'rt_ref_link', 'lex_ref_link']
-files = ['lex_master']
+
 
 # mysql connection. note to self: sqlalchemy is ass find something better
 con = sql.create_engine('mysql+pymysql://root:aaa@localhost/derbi-pie').connect()

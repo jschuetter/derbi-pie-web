@@ -1,10 +1,7 @@
 const express = require('express');
 const router = express.Router();
 const {searchID} = require("./results");
-
-const uri = 'mongodb://localhost:27017';
-const dbName = 'DERBI-PIE';
-const client = new MongoClient(uri);
+const con = require('../mysqlConnection')
 
 function capitalize(word) {
     return word.charAt(0).toUpperCase() + word.slice(1);
@@ -12,45 +9,29 @@ function capitalize(word) {
 
 
 router.get('/:common_id', async (req, res) => {
-    const common_id = req.params.common_id;
+    const root_id = req.params.common_id;
 
-    const results = await searchID(common_id, ["liv", "pokorny", "common"])
-    // const query = {common_id}
+    let [[entry], ] = await con.promise().execute(
+            'select * from rt_master where rt_master_id=?;',
+        [root_id]
+    );
 
-    // const commonCollection = client.db(dbName).collection("common")
-    // const dictionaryEntry = await commonCollection.findOne(query)
-    //
-    // const pokornyCollection = client.db(dbName).collection("pokorny")
-    // const pokornyEntry = await pokornyCollection.findOne(query)
+    console.log(entry)
 
-    // results is a dict {"tableName": [results]}, and I need to loop through each (but not common), and process the reflexes
-    let dictionaries = []
-    let common = results["common"]
-    for(let tableName in results){
-        if(tableName === "common"){
-            continue
-        }
-        // for each result in the table
-        for(let result of results[tableName]){
-            result.categorized = {}
-            if(result && result.reflexes) {
-                result.reflexes = expandSources(result.reflexes)
-                result.categorized = categorizeReflexesByLanguage(result.reflexes)
-            }
-            result.reflexes = expandSources(results[tableName].reflexes)
-            dictionaries.push({name: capitalize(tableName), data: result, categorizedReflexes: result.categorized})
-        }
-    }
+    let [dictionary, ] = await con.promise().execute(
+        `
+            select * from lex_ref_link where 
+                rt_index in (select rt_index from rt_ref_link where rt_master_id=?) 
+                and form_in_ref is not null;
+        `,
+        [root_id]
+    );
 
-    // create an entry from the data in pokorny (if it exists) and liv otherwise
-    let entry = dictionaries.find((entry) => entry.name === "Pokorny") || dictionaries.find((entry) => entry.name === "Liv")
-    if(!(entry && entry.data)){
+    if(!entry){
         res.redirect("/404")
     }
-    entry = entry.data
 
-    // Render the dictionary entry template and pass the data
-    res.render('dictionary', {entry, dictionaries, common});
+    res.render('dictionary', {entry, dictionary});
 });
 
 

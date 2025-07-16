@@ -15,24 +15,26 @@ block content
                         button.btn.btn-success(type="submit", name='submit', value="normal") Search
                         a.btn.btn-info(href="instructions") ?
                         button.btn.btn-warning(type="button" data-bs-toggle="collapse" data-bs-target="#collapseSearch" aria-expanded="false" aria-controls="collapseSearch") Advanced
-    //-
+
         .row.justify-content-center.align-items-top
             .col-lg-6.collapse#collapseSearch
                 //h3.text-center.mb-4 Plugin Search
                 form(method="GET", action="/results")
-                    each entry in searchData
-                        h3.text-center.mb-4 #{entry.name}
-                        each field in entry.fields
-                            .form-group
-                                label(for=field.id) #{field.label}
-                                .input-group.mb-3
-                                    input(id=field.id, value=field.value).form-control(type=field.type, name=field.name, placeholder=field.placeholder)
-                                    // todo: add ability to add extra buttons like the one below?
-                                    // div.btn.btn-info Help
-
+                    each field in fields
+                        .form-group.mb-2
+                            label(for=field.id) #{field.label}
+                            input(id=field.id, name=field.id).form-control()                  
+                            .form-check.form-check-inline
+                                input.form-check-input(type="checkbox", id=field.id+"-exact", name=field.id+"-exact")
+                                label.form-check-label.text-muted(for=field.id+"-exact") Exact match
+                            .form-check.form-check-inline
+                                input.form-check-input(type="checkbox", id=field.id+"-use-refs", name=field.id+"-use-refs")
+                                label.form-check-label.text-muted(for=field.id+"-use-refs") Search references
+                            
                     .form-group.text-center
-                        br
-                        button.btn.btn-success(type="submit", name='submit', value="advanced") Advanced Search
+                        .button-group
+                            button.m-1.btn.btn-success.btn-primary(type="submit", name='submit', value="advanced-roots") Search Roots
+                            button.m-1.btn.btn-success.btn-primary(type="submit", name='submit', value="advanced-reflex") Search Reflexes
         .row
 
     script(src="javascripts/alt_letters.js")

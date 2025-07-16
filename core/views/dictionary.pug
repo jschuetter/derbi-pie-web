@@ -7,49 +7,33 @@ block content
                 .row.justify-content-center
                     .col-lg-4.text-center
                         h2
-                            strong.mb-4.text-center !{entry.root}
+                            strong.mb-4.text-center #{entry.rt_shape}
                         //.col-lg-4
                         h4
-                            span.ml-2 !{entry.meaning}
+                            span.ml-2 #{entry.rt_meaning}
             .card-body
-                each dictionary in dictionaries
-                    if dictionary.data && dictionary.data.cross && dictionary.data.cross.length > 0
-                        h3 Cross References - #{dictionary.name}
-                        each crossEntry in dictionary.data.cross
-                             a(href="/dictionary/" + crossEntry.common_id)= crossEntry.display
-                    if Object.keys(dictionary.categorizedReflexes).length > 0
-                        h3 Reflexes - #{dictionary.name}
-                        table.table.table-striped.table-bordered
-                            thead
-                                tr
-                                    th Language
-                                    th Reflex(es)
-                                    th Gloss
-                                    th Grammar
-                                    th Sources
-                            tbody
-                            each familyGroup, familyName in dictionary.categorizedReflexes
-                                tr
-                                    td(colspan="5").table-family <strong>#{familyName}</strong>
-                                    //td(colspan="4")
-                                each reflexes, subFamilyName in familyGroup
-                                    each reflex in reflexes
-                                        tr
-                                            td.table-langauge= reflex.language.language_name
-                                            td.table-reflex= reflex.reflexes.join(', ')
-                                            td.table-gloss= reflex.gloss
-                                            td.table-grammar
-                                                each posObj, index in reflex.pos
-                                                    span.popover-trigger(data-bs-toggle="popover", data-bs-content=posObj.meaning, data-bs-placement="top")= posObj.code
-                                                    if index !== reflex.pos.length - 1
-                                                        | .
-                                            td.table-sources
-                                                each source in reflex.combinedSources
-                                                    span.popover-trigger(data-bs-toggle="popover", data-bs-content=source.display data-bs-placement="right")= source.code + " "
-                    else
-                        h4 Reflexes currently missing.
-                    hr
-
+                if dictionary.length > 0
+                    h3 Reflexes
+                    table.table.table-striped.table-bordered
+                        thead
+                            tr
+                                th Language
+                                th Reflex
+                                th Gloss
+                                th Grammar
+                                th Source
+                        tbody
+                        each reflex in dictionary
+                            tr
+                                td.table-langauge= reflex.lang
+                                td.table-reflex= reflex.form_in_ref
+                                td.table-gloss= reflex.gloss_orig
+                                td.table-grammar
+                                td.table-source= reflex.ref_id
+                else
+                    h4 Reflexes currently missing.
+                hr
+        //-
             .card-body
                 // Related Concepticon Concepts Section
                 if common && common.length > 0 && common[0].concepticon && common[0].concepticon.length > 0
