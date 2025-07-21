@@ -45,23 +45,31 @@ async function getResults(data){
         return {}
         results = await newAdvancedSearch(data);
     }else{
-        let pattern = patternedRegex(data.search)
+        let quoteSplit = data.search.split('"');
+        let [defSearch] = quoteSplit.splice(1,1);
+        defSearch = defSearch ? "%"+defSearch+"%" : "%%";
+        let shapeSearch = quoteSplit.join("");
+        console.log(defSearch)
+
+        let pattern = patternedRegex(shapeSearch);
         console.log(pattern)
         const [results, ] = await con.promise().execute(
             `
             select * from rt_master where (
-                (
+                ((
                     rt_shape regexp ?
                 ) or (
                     rt_master_id in (
                         select rt_master_id from rt_ref_link where rt_shape regexp ?
                     )
-                )
+                )) and (
+                    rt_meaning like ?
+                ) 
             ) and (rt_shape is not null);
             `,
-            [pattern, pattern]
+            [pattern, pattern, defSearch]
         );
-        console.log(results);
+        // console.log(results);
         return results;
     }
 }

@@ -21,8 +21,9 @@ router.get('/:common_id', async (req, res) => {
     let [dictionary, ] = await con.promise().execute(
         `
             select * from lex_ref_link where 
-                rt_index in (select rt_index from rt_ref_link where rt_master_id=?) 
-                and form_in_ref is not null;
+                (ref_id, ref_rt_index) in (
+                    select ref_id, ref_rt_index from rt_ref_link where rt_master_id=?
+                ) and form_in_ref is not null;
         `,
         [root_id]
     );
