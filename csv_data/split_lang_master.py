@@ -1,0 +1,1 @@
+(pd := __import__('pandas')).DataFrame(dict(zip(('source_abbrev', 'eng_abbrev'), zip(*[(c,a) for _,a,b,*_ in pd.read_csv('lang_master.csv', dtype='string').itertuples() for c in str(b).split(',')])))).to_csv('lang_abbrev_master.csv', encoding='utf-8-sig', index=False)

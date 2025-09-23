@@ -10,29 +10,40 @@ block content
                             strong.mb-4.text-center #{entry.rt_shape}
                         //.col-lg-4
                         h4
-                            span.ml-2 #{entry.rt_meaning}
-            .card-body
-                if dictionary.length > 0
-                    h3 Reflexes
-                    table.table.table-striped.table-bordered
+                            if entry.grammar
+                                span.pr-2 #{entry.grammar} ·&nbsp;
+                            strong.ml-4 #{entry.rt_meaning}
+                        if entry.alternates.length > 0
+                            if entry.alternates.length > 1
+                                strong Alternate forms:
+                                each form, index in entry.alternates
+                                    span #{form}
+                                    if index != entry.alternates.length-1
+                                        span ,
+                            else 
+                                strong Alternate form:
+                                span #{entry.alternates[0]}
+                        if entry.variant_id
+                            span Variant of: 
+                            a(href="/dictionary/"+entry.variant_id) #{entry.variant_shape}
+            each dictionary, source in sources
+                h3(data-bs-toggle="collapse" data-bs-target="#collapse"+source).mb0.card-header 
+                    .dropdown-toggle Reflexes in #{source}
+                div(id="collapse"+source).collapse 
+                    table.card-body.table.table-striped.table-bordered.mb-0
                         thead
                             tr
                                 th Language
                                 th Reflex
                                 th Gloss
                                 th Grammar
-                                th Source
                         tbody
                         each reflex in dictionary
                             tr
-                                td.table-langauge= reflex.orig_lang_abbrev
-                                td.table-reflex= reflex.form_in_ref
+                                td.table-langauge= reflex.full_xlanguage_name
+                                td.table-reflex= reflex.reflex
                                 td.table-gloss= reflex.gloss_orig
-                                td.table-grammar
-                                td.table-source= reflex.ref_id
-                else
-                    h4 Reflexes currently missing.
-                hr
+                                td.table-grammar= reflex.category 
         //-
             .card-body
                 // Related Concepticon Concepts Section
