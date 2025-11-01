@@ -5,14 +5,14 @@ const mysql = require('mysql2');
 const connection = mysql.createConnection({
   host: 'localhost',
   user: 'root',
-  database: 'derbi-pie',
-  password: 'aaa'
+  database: 'derbi_pie_sql',
+  password: 'derb1_P1e'
 });
 
 // console.log('MySQL test query:\n');
 // // A simple SELECT query
 // connection.query(
-//   'SELECT * FROM rt_master WHERE rt_shape = "k̑leu̯s-" ',
+//   'SELECT * FROM lewis_short LIMIT 2;',
 //   function (err, results, fields) {
 //     console.log(results); // results contains rows returned by server
 //     console.log(fields); // fields contains extra meta data about results, if available
