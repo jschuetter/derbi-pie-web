@@ -17,11 +17,12 @@
     "http-errors": "~1.6.3",
     "jquery": "^3.7.0",
     "morgan": "~1.9.1",
+    "mysql2": "^3.14.1",
     "passport": "^0.7.0",
     "passport-local": "^1.0.0",
     "pug": "^3.0.2",
-    "readline-sync": "^1.4.10",
-    "mysql2": "^3.14.1"
+    "pug-cli": "^1.0.0-alpha6",
+    "readline-sync": "^1.4.10"
   },
   "devDependencies": {
     "nodemon": "^2.0.22"
