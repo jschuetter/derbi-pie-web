@@ -49,15 +49,15 @@ router.post('/register', async (req, res) => {
     const { username, password, inviteCode } = req.body;
 
     // Check if invite code exists and is not used
-    if(!await User.getInviteCode(inviteCode)) {
-      return res.render('register', {
-        title: 'Register',
-        error: 'Invalid or already used invite code.'
-      });
-    }
+    // if(!await User.getInviteCode(inviteCode)) {
+    //   return res.render('register', {
+    //     title: 'Register',
+    //     error: 'Invalid or already used invite code.'
+    //   });
+    // }
 
     await User.createUser(username, password);
-    await User.deleteInviteCode(inviteCode);
+    // await User.deleteInviteCode(inviteCode);
 
     res.redirect('/login');
   } catch (error) {
