@@ -6,6 +6,10 @@ a {
   color: #00B7FF;
 }
 
+.navbar-brand img {
+  width: 100px;
+  height: auto;
+}
 .alternate-letter-entry {
   padding: 2px;
   min-width: 2em;
