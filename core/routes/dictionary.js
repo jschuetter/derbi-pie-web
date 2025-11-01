@@ -53,6 +53,28 @@ router.get('/:common_id', async (req, res) => {
 
     // get the attested reflexes
     let [dictionary, ] = await con.promise().execute(
+        // Original query
+        // `
+        //     select * from lex_ref_link 
+        //     left join rt_ref_link on 
+        //     (
+        //         rt_ref_link.ref_rt_index=lex_ref_link.ref_rt_index
+        //         and 
+        //         rt_ref_link.ref_id=lex_ref_link.ref_id
+        //     ) or (
+        //         rt_ref_link.rt_ref_link_id=lex_ref_link.rt_ref_link_id 
+        //     )
+        //     left join lang_abbrev_master on lex_ref_link.orig_lang_abbrev=lang_abbrev_master.source_abbrev
+        //     collate utf8mb3_general_ci
+        //     left join lang_master on lang_abbrev_master.eng_abbrev=lang_master.eng_abbrev
+        //     collate utf8mb3_general_ci
+        //     where rt_ref_link.rt_master_id=?
+        //     and reflex is not null
+        //     ; 
+        // `,
+        // [root_id]
+
+        // Patched query (removed references to lang_master & updated charset to utf8mb4)
         `
             select * from lex_ref_link 
             left join rt_ref_link on 
@@ -64,9 +86,7 @@ router.get('/:common_id', async (req, res) => {
                 rt_ref_link.rt_ref_link_id=lex_ref_link.rt_ref_link_id 
             )
             left join lang_abbrev_master on lex_ref_link.orig_lang_abbrev=lang_abbrev_master.source_abbrev
-            collate utf8mb3_general_ci
-            left join lang_master on lang_abbrev_master.eng_abbrev=lang_master.eng_abbrev
-            collate utf8mb3_general_ci
+            collate utf8mb4_general_ci
             where rt_ref_link.rt_master_id=?
             and reflex is not null
             ; 
