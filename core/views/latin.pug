@@ -5,58 +5,62 @@ block content
     .row.justify-content-left.align-items-top 
         .col-lg-8
             form#latin-search(method="GET", action="/results")
-                    .input-group.mb-3
-                        //label.input-group-text(for="search-input") Meaning
-                        input.form-control.alt-keys#search-input(type="text", name="search", placeholder="Enter a root")
-                        #alt-letter-popover(style="display: none;")
-                        button.btn.btn-success(type="submit", name='submit', value="normal") Search
+                // On submit, calls endpoint '/results' with query params {search: 'input field val', submit: 'normal'}
+                // viz. query params are equal to key-value pairs using 'name' and 'value' attributes of input & btn elements
+
+                .input-group.mb-3
+                    //label.input-group-text(for="search-input") Meaning
+                    input.form-control.alt-keys#search-input(type="text", name="search", placeholder="Enter a root")
+                    #alt-letter-popover(style="display: none;")
+                    button.btn.btn-success(type="submit", name='submit', value="normal") Search
 
     // Details display
     #entry-details
-        table 
-            tr
-                td Language 
-                td language goes here 
-            tr
-                td Grammar 
-                td POS, gender, declension go here 
-            tr
-                td Pronunciation 
-                td IPA goes here 
-            tr
-                td Etymology
-                td etym goes here
-            tr
-                td Cognates
-                td Something here?
-            tr
-                td Descendants
-                td offspring here
+        #details-table
+            table 
+                tr
+                    td Language 
+                    td language goes here 
+                tr
+                    td Grammar 
+                    td POS, gender, declension go here 
+                tr
+                    td Pronunciation 
+                    td IPA goes here 
+                tr
+                    td Etymology
+                    td etym goes here
+                tr
+                    td Cognates
+                    td Something here?
+                tr
+                    td Descendants
+                    td offspring here
         
         hr
-
-        h3 Meaning
-        ol
-            li Sense 1
-            li Sense 2
-            li Sense 3
+        #details-meaning
+            h5 Meaning
+            ol
+                li Sense 1
+                li Sense 2
+                li Sense 3
         
         hr
-
-        h3 Declension
-        p *Latin quiz flashbacks here*
+        #details-declension
+            h5 Declension
+            p *Latin quiz flashbacks here*
+            
+        hr
+        #details-citations
+            h5 Attestations
+            p #[strong Vergil wrote this] "Arma virumque cano Troiae qui primus ab oris..."
         
         hr
-
-        h3 Attestations
-        p #[strong Vergil wrote this] "Arma virumque cano Troiae qui primus ab oris..."
-        
-        hr
-
-        h3 Related Words
-        ol
-            li raeda
-            li in
-            li fossa
-            li est.
+        #details-related
+            h5 Related Words
+            ol
+                li raeda
+                li in
+                li fossa
+                li est.
             

@@ -4,7 +4,6 @@
 
 #entry-details {
     table {
-        /* width: 100%; */
         /* Fix width of first column */
         td:first-of-type {
             width: 12em;
