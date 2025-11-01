@@ -1,3 +1,16 @@
 #latin-search {
     margin: 1em;
 }
+
+#entry-details {
+    table {
+        /* width: 100%; */
+        /* Fix width of first column */
+        td:first-of-type {
+            width: 12em;
+        }
+        td {
+            padding: 0.5rem 0 0 3em;
+        }
+    }
+}
