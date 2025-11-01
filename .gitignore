@@ -3,3 +3,4 @@ node_modules/
 csv_data/*.csv
 csv_data/*.xlsx
 *__pycache__* 
+.vscode/
