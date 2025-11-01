@@ -1,0 +1,11 @@
+extends layout 
+
+block content 
+    .row.justify-content-left.align-items-top 
+        .col-lg-8
+            form#latin-search(method="GET", action="/results")
+                    .input-group.mb-3
+                        //label.input-group-text(for="search-input") Meaning
+                        input.form-control.alt-keys#search-input(type="text", name="search", placeholder="Enter a root")
+                        #alt-letter-popover(style="display: none;")
+                        button.btn.btn-success(type="submit", name='submit', value="normal") Search

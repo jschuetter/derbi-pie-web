@@ -21,6 +21,8 @@ const instructionsRouter = express.Router().get('/', (req, res) => {res.render('
 const aboutRoutes = express.Router().get('/', (req, res) => {res.render('about')});
 // const adminRoutes = require('./routes/admin');
 
+const latinRouter = require('./routes/latin');
+
 const app = express();
 
 // view engine setup
@@ -104,6 +106,9 @@ app.use('/', indexRouter);
 app.use('/construction', constructionRoutes);
 app.use('/about', aboutRoutes);
 app.use('/login', require('./routes/auth'));
+
+// MY ROUTE!
+app.use('/latin', latinRouter);
 
 //protected routes
 // todo: some of these SHOULD be protected, but are not for convenience
