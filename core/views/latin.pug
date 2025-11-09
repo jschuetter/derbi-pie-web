@@ -4,13 +4,13 @@ block content
     // Search bar
     .row.justify-content-left.align-items-top 
         .col-lg-8
-            form#latin-search(method="GET", action="/results")
-                // On submit, calls endpoint '/results' with query params {search: 'input field val', submit: 'normal'}
+            form#latin-search(method="GET", action="/latin")
+                // On submit, calls endpoint '/latin' with query params {search: 'input field val', submit: 'normal'}
                 // viz. query params are equal to key-value pairs using 'name' and 'value' attributes of input & btn elements
 
                 .input-group.mb-3
                     //label.input-group-text(for="search-input") Meaning
-                    input.form-control.alt-keys#search-input(type="text", name="search", placeholder="Enter a root")
+                    input.form-control.alt-keys#search-input(type="text", name="search", placeholder="Enter a query")
                     #alt-letter-popover(style="display: none;")
                     button.btn.btn-success(type="submit", name='submit', value="normal") Search
 
