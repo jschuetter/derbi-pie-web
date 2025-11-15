@@ -70,6 +70,8 @@ block content
                                 a(href="/latin/lemma/" + entry.lemma_id) #{entry.lemma + (entry.sense_num ? entry.sense_num.split('.')[0] : '')}
                     
         script.
+            const INDENT_PX = 50;
+
             // Populate entries & attestations
             let entries = !{JSON.stringify(lemmaData.senses)};
             let mainEntry = !{JSON.stringify(lemmaData.main)};
@@ -81,32 +83,40 @@ block content
             let mainDiv = document.createElement('div');
             mainDiv.classList.add('main-sense', 'sense');
             if (mainEntry.sense_num) {
-                mainDiv.innerHTML += "<b>" + mainEntry.sense_num + "</b>"
+                mainDiv.innerHTML += "<b>" + mainEntry.sense_num + ". </b>"
             }
-            mainDiv.innerHTML += "<span>" + mainEntry.entry ? mainEntry.entry : mainEntry.entry_str + "</span>"
+            console.log(mainEntry.entry);
+            mainDiv.innerHTML += "<span>" + (mainEntry.entry ? mainEntry.entry : mainEntry.entry_str) + "</span>"
             senseParent.appendChild(mainDiv);
-            attestations.push(mainDiv.querySelectorAll(':scope > .cit'));
-            attestations.push(mainDiv.querySelectorAll(':scope > .bibl'));
+            mainDiv.querySelectorAll('.cit, :not(.cit) > .bibl').forEach((elem) => {
+                    attestations.push(elem.cloneNode(true));
+                });
 
             //Sense entries
             entries.forEach((sense) => {
+                console.log(sense.entry);
                 let entryDiv = document.createElement('div');
-                entryDiv.classList.add('sense', 'indent-' + sense.sense_num.length);
-                entryDiv.style = "margin-left:" + (50*Math.floor(sense.sense_num.length/2)) + "px;";
-                entryDiv.innerHTML += "<b>" + sense.sense_num.split('.').at(-1) + "</b>"
-                entryDiv.innerHTML += "<span>" + sense.entry ? sense.entry : sense.entry_str + "</span>"
+                let indent_lvl = Math.floor((sense.sense_num.split('.').length - 1) / 2);
+                entryDiv.classList.add('sense', 'indent-' + indent_lvl);
+                entryDiv.style = "margin-left:" + (INDENT_PX*indent_lvl) + "px;";
+                entryDiv.innerHTML += "<b>" + sense.sense_num.split('.').at(-1) + ". </b>"
+                entryDiv.innerHTML += "<span>" + (sense.entry ? sense.entry : sense.entry_str) + "</span>"
                 senseParent.appendChild(entryDiv);
                 
-                attestations.push(entryDiv.querySelectorAll(':scope > .cit'));
-                attestations.push(entryDiv.querySelectorAll(':scope > .bibl'));
+                entryDiv.querySelectorAll('.cit, :not(.cit) > .bibl').forEach((elem) => {
+                    attestations.push(elem.cloneNode(true));
+                });
             });
             
             // Populate attestations
             console.log(attestations);
-            attestations.forEach((resultList) => {
-                resultList.forEach((elem) => {
-                    attestationElement = document.createElement('li');
-                    attestationElement.appendChild(elem);
-                    attestationParent.appendChild(attestationElement);
-                });
+            attestations.forEach((elem) => {
+                attestationElement = document.createElement('li');
+                attestationElement.appendChild(elem);
+                //Indent if no author listed (belongs to previous work?) - cf. acus[2]
+                //Could compare URN attribute here if needed
+                if (!elem.querySelector('.author')) {
+                    attestationElement.style = "margin-left:" + INDENT_PX/2 + "px;";
+                }
+                attestationParent.appendChild(attestationElement);
             });
