@@ -4,35 +4,36 @@ const mysql = require('mysql2');
 const con = require('../mysqlConnection')
 const fs = require("fs");
 
-router.get('/:lemma_id?', async (req, res) => {
-    // console.log(req);
+router.get('/', async (req, res) => {
     console.log("Query:");
     console.log(req.params);
-    console.log(typeof(req.params));
-    console.log(req.params.lemma_id);
     // Check available query parameters
     if (Object.hasOwn(req.query, 'search')) {
         let searchResults = await(getResults(req.query));
         console.log("Results:");
         console.log(searchResults);
         if (searchResults.length > 0) {
-            res.redirect('/latin/' + searchResults[0].lemma_id);
+            res.redirect('/latin/lemma/' + searchResults[0].lemma_id);
         } else {
             console.log("No results to render.");
             res.render('latin');
         }
-    } else if (req.params.lemma_id !== undefined) {
-        // Render lemma data
-        console.log("Render lemma: " + req.params.lemma_id)
-        let lemmaData = await(getSenses(req.params.lemma_id));
-        console.log("DATA:");
-        console.log(lemmaData);
-        res.render('latin', { lemmaData });
     } else {
         console.log("No valid query params found.");
         res.render('latin');
     }
     
+});
+
+// Route for lemma definition
+router.get('/lemma/:lemma_id', async(req, res) => {
+    // Render lemma data
+    console.log("Render lemma: " + req.params.lemma_id)
+    let lemmaData = await(getSenses(req.params.lemma_id));
+    console.log("DATA:");
+    console.log(lemmaData.main);
+    // console.log(lemmaData.senses);
+    res.render('latin', { lemmaData });
 });
 
 // Copied from results.js
@@ -43,7 +44,9 @@ async function getResults(data){
     // console.log("Search for:");
     // console.log(data);
 
-    let pattern = "%" + data.search + "%"
+    // let pattern = "%" + data.search + "%"
+    // Exact match only for now
+    let pattern = data.search
     console.log(pattern)
     //For now: select top result only
     const [results, ] = await con.promise().execute(
@@ -60,7 +63,7 @@ async function getResults(data){
 
 async function getSenses(lemma_id){
     //Get main entry
-    const [mainEntry, ] = await con.promise().execute(
+    const [[mainEntry, ]] = await con.promise().execute(
         `
         SELECT * FROM lex_master
         WHERE lemma_id = ?;
@@ -68,14 +71,17 @@ async function getSenses(lemma_id){
         [lemma_id]
     );
     //Get entry senses
-    const [senses, ] = await con.promise().execute(
+    const [senseEntries, ] = await con.promise().execute(
         `
         SELECT * FROM lex_senses
         WHERE lemma_id = ?;
         `,
         [lemma_id]
     );
-    return mainEntry.concat(senses);
+    return {
+        main: mainEntry,
+        senses: senseEntries
+    };
 }
 
 // // region helpers

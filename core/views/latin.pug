@@ -10,57 +10,65 @@ block content
 
                 .input-group.mb-3
                     //label.input-group-text(for="search-input") Meaning
-                    input.form-control.alt-keys#search-input(type="text", name="search", placeholder="Enter a query")
+                    if lemmaData
+                        //Populate with currently displayed lemma if exists
+                        input.form-control.alt-keys#search-input(type="text", name="search", placeholder="Enter a query", value=lemmaData.main.lemma)
+                    else
+                        input.form-control.alt-keys#search-input(type="text", name="search", placeholder="Enter a query")
                     #alt-letter-popover(style="display: none;")
                     button.btn.btn-success(type="submit", name='submit', value="normal") Search
 
     // Details display
-    #entry-details
-        #details-table
-            table 
-                tr
-                    td Language 
-                    td language goes here 
-                tr
-                    td Grammar 
-                    td POS, gender, declension go here 
-                tr
-                    td Pronunciation 
-                    td IPA goes here 
-                tr
-                    td Etymology
-                    td etym goes here
-                tr
-                    td Cognates
-                    td Something here?
-                tr
-                    td Descendants
-                    td offspring here
-        
-        hr
-        #details-meaning
-            h5 Meaning
-            ol
-                li Sense 1
-                li Sense 2
-                li Sense 3
-        
-        hr
-        #details-declension
-            h5 Declension
-            p *Latin quiz flashbacks here*
+    // Grammar data comes from main entry
+    if lemmaData
+        #entry-details
+            #details-table
+                table 
+                    tr
+                        td Language 
+                        td #{lemmaData.main.lang}
+                    tr
+                        td Grammar 
+                        if lemmaData.main.gender
+                            td #{lemmaData.main.pos}, #{lemmaData.main.gender}
+                        else
+                            td #{lemmaData.main.pos}
+                    tr
+                        td Pronunciation 
+                        td #{lemmaData.main.ipa}
+                    tr
+                        td Etymology
+                        td etym goes here
+                    tr
+                        td Cognates
+                        td Something here?
+                    tr
+                        td Descendants
+                        td offspring here
             
-        hr
-        #details-citations
-            h5 Attestations
-            p #[strong Vergil wrote this] "Arma virumque cano Troiae qui primus ab oris..."
-        
-        hr
-        #details-related
-            h5 Related Words
-            ol
-                li raeda
-                li in
-                li fossa
-                li est.
+            hr
+            #details-meaning
+                h5 Meaning
+                ol
+                    li Sense 1
+                    li Sense 2
+                    li Sense 3
             
+            hr
+            #details-declension
+                h5 Declension
+                p *Latin quiz flashbacks here*
+                
+            hr
+            #details-citations
+                h5 Attestations
+                p #[strong Vergil wrote this] "Arma virumque cano Troiae qui primus ab oris..."
+            
+            hr
+            #details-related
+                h5 Related Words
+                ol
+                    li raeda
+                    li in
+                    li fossa
+                    li est.
