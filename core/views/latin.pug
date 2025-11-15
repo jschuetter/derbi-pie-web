@@ -46,11 +46,14 @@ block content
             hr
             #details-meaning
                 h5 Meaning
-                ol
-                    li Sense 1
-                    li Sense 2
-                    li Sense 3
-            
+                #senses
+                    .main-sense
+                        b #{lemmaData.main.sense_num ? lemmaData.main.sense_num : ''} 
+                        span #{lemmaData.main.entry_str}
+                    each sense in lemmaData.senses
+                        div(class='sense indent-' + sense.sense_num.length style="margin-left:" + (50*Math.floor(sense.sense_num.length/2)) + "px;")
+                            b #{sense.sense_num.split('.').at(-1)}. 
+                            span #{sense.entry_str}
             hr
             #details-declension
                 h5 Declension

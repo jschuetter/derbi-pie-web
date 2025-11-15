@@ -32,7 +32,7 @@ router.get('/lemma/:lemma_id', async(req, res) => {
     let lemmaData = await(getSenses(req.params.lemma_id));
     console.log("DATA:");
     console.log(lemmaData.main);
-    // console.log(lemmaData.senses);
+    console.log(lemmaData.senses[0]);
     res.render('latin', { lemmaData });
 });
 
