@@ -12,8 +12,11 @@ router.get('/', async (req, res) => {
         let searchResults = await(getResults(req.query));
         console.log("Results:");
         console.log(searchResults);
+        let related = searchResults.slice(1);
+        // N.B. only handles exact lemma matches right now - will have to handle cases where sense_num is null in the future
+        querystring = related.length ? '/?' + related.map(a => 'related=' + a.lemma_id + ',' + a.lemma + a.sense_num).join('&') : '';
         if (searchResults.length > 0) {
-            res.redirect('/latin/lemma/' + searchResults[0].lemma_id);
+            res.redirect('/latin/lemma/' + searchResults[0].lemma_id + querystring);
         } else {
             console.log("No results to render.");
             res.render('latin');
@@ -33,13 +36,35 @@ router.get('/lemma/:lemma_id', async(req, res) => {
     console.log("DATA:");
     console.log(lemmaData.main);
     console.log(lemmaData.senses[0]);
+    if (Object.hasOwn(req.query, 'related')) {
+        console.log("Related: " + req.query.related);
+        console.log(typeof(req.query.related));
+        let relatedEntries = []
+
+        if (typeof(req.query.related) == 'string') {
+            let [id, lemma] = req.query.related.split(',');
+            relatedEntries = [{
+                'id': id,
+                'lemma': lemma
+            }]
+        } else {
+            req.query.related.forEach((e) => {
+                let [id, lemma] = e.split(',');
+                relatedEntries.push({
+                    'id': id,
+                    'lemma': lemma
+                })
+            });
+        }
+        lemmaData["related"] = relatedEntries;
+    }
+    console.log(lemmaData);
     res.render('latin', { lemmaData });
 });
 
 // Copied from results.js
 async function getResults(data){
     // Perform the database query to retrieve search results
-    let searchResults = []
 
     // console.log("Search for:");
     // console.log(data);
@@ -52,8 +77,7 @@ async function getResults(data){
     const [results, ] = await con.promise().execute(
         `
         SELECT * FROM lex_master
-        WHERE lemma LIKE ?
-        LIMIT 1;
+        WHERE lemma LIKE ?;
         `,
         [pattern]
     );

@@ -49,11 +49,13 @@ block content
                 #senses
                     .main-sense
                         b #{lemmaData.main.sense_num ? lemmaData.main.sense_num : ''} 
-                        span #{lemmaData.main.entry_str}
+                        span 
+                        | !{lemmaData.main.entry ? lemmaData.main.entry : lemmaData.main.entry_str}
                     each sense in lemmaData.senses
                         div(class='sense indent-' + sense.sense_num.length style="margin-left:" + (50*Math.floor(sense.sense_num.length/2)) + "px;")
                             b #{sense.sense_num.split('.').at(-1)}. 
-                            span #{sense.entry_str}
+                            span 
+                            | !{sense.entry ? sense.entry : sense.entry_str}
             hr
             #details-declension
                 h5 Declension
@@ -67,8 +69,9 @@ block content
             hr
             #details-related
                 h5 Related Words
-                ol
-                    li raeda
-                    li in
-                    li fossa
-                    li est.
+                if lemmaData.related
+                    ul
+                        each entry in lemmaData.related
+                            li
+                                a(href="/latin/lemma/" + entry.id + "/?" + lemmaData.related.map(e => 'related=' + e.id + ',' + e.lemma).join('&')) #{entry.lemma}
+                    
