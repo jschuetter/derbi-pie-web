@@ -12,4 +12,17 @@
             padding: 0.5rem 0 0 3em;
         }
     }
+
+    .cit {
+        color: darkslategrey;
+        text-decoration: underline dotted green 2pt;
+    }
+    
+    .bibl {
+        color: blue;
+
+        .author {
+            font-weight: bold;
+        }
+    }
 }
