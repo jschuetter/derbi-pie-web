@@ -47,15 +47,8 @@ block content
             #details-meaning
                 h5 Meaning
                 #senses
-                    .main-sense
-                        b #{lemmaData.main.sense_num ? lemmaData.main.sense_num : ''} 
-                        span 
-                        | !{lemmaData.main.entry ? lemmaData.main.entry : lemmaData.main.entry_str}
-                    each sense in lemmaData.senses
-                        div(class='sense indent-' + sense.sense_num.length style="margin-left:" + (50*Math.floor(sense.sense_num.length/2)) + "px;")
-                            b #{sense.sense_num.split('.').at(-1)}. 
-                            span 
-                            | !{sense.entry ? sense.entry : sense.entry_str}
+                    // Populated later
+                
             hr
             #details-declension
                 h5 Declension
@@ -64,7 +57,8 @@ block content
             hr
             #details-citations
                 h5 Attestations
-                p #[strong Vergil wrote this] "Arma virumque cano Troiae qui primus ab oris..."
+                ul#citations
+                    //Populated later
             
             hr
             #details-related
@@ -74,3 +68,45 @@ block content
                         each entry in lemmaData.related
                             li
                                 a(href="/latin/lemma/" + entry.lemma_id) #{entry.lemma + (entry.sense_num ? entry.sense_num.split('.')[0] : '')}
+                    
+        script.
+            // Populate entries & attestations
+            let entries = !{JSON.stringify(lemmaData.senses)};
+            let mainEntry = !{JSON.stringify(lemmaData.main)};
+            let attestations = [];
+            const senseParent = document.getElementById('senses');
+            const attestationParent = document.getElementById('citations');
+
+            // Main sense entry
+            let mainDiv = document.createElement('div');
+            mainDiv.classList.add('main-sense', 'sense');
+            if (mainEntry.sense_num) {
+                mainDiv.innerHTML += "<b>" + mainEntry.sense_num + "</b>"
+            }
+            mainDiv.innerHTML += "<span>" + mainEntry.entry ? mainEntry.entry : mainEntry.entry_str + "</span>"
+            senseParent.appendChild(mainDiv);
+            attestations.push(mainDiv.querySelectorAll(':scope > .cit'));
+            attestations.push(mainDiv.querySelectorAll(':scope > .bibl'));
+
+            //Sense entries
+            entries.forEach((sense) => {
+                let entryDiv = document.createElement('div');
+                entryDiv.classList.add('sense', 'indent-' + sense.sense_num.length);
+                entryDiv.style = "margin-left:" + (50*Math.floor(sense.sense_num.length/2)) + "px;";
+                entryDiv.innerHTML += "<b>" + sense.sense_num.split('.').at(-1) + "</b>"
+                entryDiv.innerHTML += "<span>" + sense.entry ? sense.entry : sense.entry_str + "</span>"
+                senseParent.appendChild(entryDiv);
+                
+                attestations.push(entryDiv.querySelectorAll(':scope > .cit'));
+                attestations.push(entryDiv.querySelectorAll(':scope > .bibl'));
+            });
+            
+            // Populate attestations
+            console.log(attestations);
+            attestations.forEach((resultList) => {
+                resultList.forEach((elem) => {
+                    attestationElement = document.createElement('li');
+                    attestationElement.appendChild(elem);
+                    attestationParent.appendChild(attestationElement);
+                });
+            });
