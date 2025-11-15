@@ -10,11 +10,8 @@ block content
 
                 .input-group.mb-3
                     //label.input-group-text(for="search-input") Meaning
-                    if lemmaData
-                        //Populate with currently displayed lemma if exists
-                        input.form-control.alt-keys#search-input(type="text", name="search", placeholder="Enter a query", value=lemmaData.main.lemma)
-                    else
-                        input.form-control.alt-keys#search-input(type="text", name="search", placeholder="Enter a query")
+                    //Populate with currently displayed lemma if exists
+                    input.form-control.alt-keys#search-input(type="text", name="search", placeholder="Enter a query", value=lemmaData ? lemmaData.main.lemma : '')
                     #alt-letter-popover(style="display: none;")
                     button.btn.btn-success(type="submit", name='submit', value="normal") Search
 
