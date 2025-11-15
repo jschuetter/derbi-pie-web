@@ -73,5 +73,4 @@ block content
                     ul
                         each entry in lemmaData.related
                             li
-                                a(href="/latin/lemma/" + entry.id + "/?" + lemmaData.related.map(e => 'related=' + e.id + ',' + e.lemma).join('&')) #{entry.lemma}
-                    
+                                a(href="/latin/lemma/" + entry.lemma_id) #{entry.lemma + (entry.sense_num ? entry.sense_num.split('.')[0] : '')}

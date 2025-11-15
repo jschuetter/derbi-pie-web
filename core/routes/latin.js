@@ -14,9 +14,8 @@ router.get('/', async (req, res) => {
         console.log(searchResults);
         let related = searchResults.slice(1);
         // N.B. only handles exact lemma matches right now - will have to handle cases where sense_num is null in the future
-        querystring = related.length ? '/?' + related.map(a => 'related=' + a.lemma_id + ',' + a.lemma + a.sense_num).join('&') : '';
         if (searchResults.length > 0) {
-            res.redirect('/latin/lemma/' + searchResults[0].lemma_id + querystring);
+            res.redirect('/latin/lemma/' + searchResults[0].lemma_id);
         } else {
             console.log("No results to render.");
             res.render('latin');
@@ -32,32 +31,13 @@ router.get('/', async (req, res) => {
 router.get('/lemma/:lemma_id', async(req, res) => {
     // Render lemma data
     console.log("Render lemma: " + req.params.lemma_id)
-    let lemmaData = await(getSenses(req.params.lemma_id));
+    let lemmaData = await getSenses(req.params.lemma_id);
     console.log("DATA:");
     console.log(lemmaData.main);
     console.log(lemmaData.senses[0]);
-    if (Object.hasOwn(req.query, 'related')) {
-        console.log("Related: " + req.query.related);
-        console.log(typeof(req.query.related));
-        let relatedEntries = []
+    // Query for related lemmas
+    lemmaData["related"] = await getRelated(lemmaData.main);
 
-        if (typeof(req.query.related) == 'string') {
-            let [id, lemma] = req.query.related.split(',');
-            relatedEntries = [{
-                'id': id,
-                'lemma': lemma
-            }]
-        } else {
-            req.query.related.forEach((e) => {
-                let [id, lemma] = e.split(',');
-                relatedEntries.push({
-                    'id': id,
-                    'lemma': lemma
-                })
-            });
-        }
-        lemmaData["related"] = relatedEntries;
-    }
     console.log(lemmaData);
     res.render('latin', { lemmaData });
 });
@@ -106,6 +86,21 @@ async function getSenses(lemma_id){
         main: mainEntry,
         senses: senseEntries
     };
+}
+
+async function getRelated(entry_obj) {
+    // For now, just query exact lemma matches, not matching
+    // lemma_id
+    const [relatedEntries, ] = await con.promise().execute(
+        `
+        SELECT * FROM lex_master
+        WHERE lemma = ?
+        AND NOT lemma_id = ?;
+        `,
+        [entry_obj.lemma, entry_obj.lemma_id]
+    );
+    return relatedEntries
+
 }
 
 // // region helpers
