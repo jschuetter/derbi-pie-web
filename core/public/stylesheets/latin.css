@@ -1,3 +1,7 @@
+.hidden {
+    display: none;
+}
+
 #latin-search {
     margin: 1em;
 }
@@ -24,5 +28,11 @@
         .author {
             font-weight: bold;
         }
+    }
+
+    .show-more-btn {
+        color: royalblue;
+        background-color: transparent;
+        border: none;
     }
 }

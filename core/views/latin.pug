@@ -71,6 +71,9 @@ block content
                     
         script.
             const INDENT_PX = 50;
+            // Number of entries/attestations to show before adding 'show more' button
+            const SENSES_BEFORE_TRUNC = 0; // Show main entry, but no add'l senses
+            const ATTEST_BEFORE_TRUNC = 5;
 
             // Populate entries & attestations
             let entries = !{JSON.stringify(lemmaData.senses)};
@@ -79,13 +82,53 @@ block content
             const senseParent = document.getElementById('senses');
             const attestationParent = document.getElementById('citations');
 
+            // Function for populating content with 'show more' button
+            function withShowMore(elements, parent, before_hide, overrideID = null) {
+                if (!parent.id && !overrideID) {
+                    console.error("Parent element has no id! " + parent);
+                    return;
+                }
+                let hiddenDivId = parent.id + '-show-more';
+                
+                elements.slice(0, before_hide).forEach((elem) => {
+                    parent.appendChild(elem);
+                })
+
+                // Add 'show more' button & hidden div with remaining entries
+                if (elements.length > before_hide) {
+                    let showMoreBtn = document.createElement('button');
+                    showMoreBtn.classList.add('show-more-btn');
+                    showMoreBtn.innerText = '... (click to expand)';
+                    showMoreBtn.addEventListener('click', function(e) {
+                        if (
+                            document.getElementById(hiddenDivId).classList.toggle('hidden')
+                        ) {
+                            e.target.innerText = '... (click to expand)'
+                        } else {
+                            e.target.innerText = '(click to collapse)'
+                        }
+                    });
+                    parent.appendChild(showMoreBtn);
+
+                    // Create div for hidden entries
+                    let hiddenDiv = document.createElement('div');
+                    hiddenDiv.id = hiddenDivId;
+                    hiddenDiv.classList.add('hidden');
+                    
+                    elements.slice(before_hide).forEach((elem) => {
+                        hiddenDiv.appendChild(elem);
+                    });
+
+                    parent.appendChild(hiddenDiv);
+                }
+            }
+
             // Main sense entry
             let mainDiv = document.createElement('div');
             mainDiv.classList.add('main-sense', 'sense');
             if (mainEntry.sense_num) {
                 mainDiv.innerHTML += "<b>" + mainEntry.sense_num + ". </b>"
             }
-            console.log(mainEntry.entry);
             mainDiv.innerHTML += "<span>" + (mainEntry.entry ? mainEntry.entry : mainEntry.entry_str) + "</span>"
             senseParent.appendChild(mainDiv);
             mainDiv.querySelectorAll('.cit, :not(.cit) > .bibl').forEach((elem) => {
@@ -93,23 +136,29 @@ block content
                 });
 
             //Sense entries
-            entries.forEach((sense) => {
-                console.log(sense.entry);
+            function createSenseDiv(sense) {
                 let entryDiv = document.createElement('div');
                 let indent_lvl = Math.floor((sense.sense_num.split('.').length - 1) / 2);
                 entryDiv.classList.add('sense', 'indent-' + indent_lvl);
                 entryDiv.style = "margin-left:" + (INDENT_PX*indent_lvl) + "px;";
                 entryDiv.innerHTML += "<b>" + sense.sense_num.split('.').at(-1) + ". </b>"
                 entryDiv.innerHTML += "<span>" + (sense.entry ? sense.entry : sense.entry_str) + "</span>"
-                senseParent.appendChild(entryDiv);
-                
+
                 entryDiv.querySelectorAll('.cit, :not(.cit) > .bibl').forEach((elem) => {
                     attestations.push(elem.cloneNode(true));
                 });
+
+                return entryDiv
+            }
+            let entryElements = [];
+            entries.forEach((sense) => {
+                entryElements.push(createSenseDiv(sense));
             });
+            withShowMore(entryElements, senseParent, SENSES_BEFORE_TRUNC);
+            
             
             // Populate attestations
-            console.log(attestations);
+            attestationElements = []
             attestations.forEach((elem) => {
                 attestationElement = document.createElement('li');
                 attestationElement.appendChild(elem);
@@ -118,5 +167,6 @@ block content
                 if (!elem.querySelector('.author')) {
                     attestationElement.style = "margin-left:" + INDENT_PX/2 + "px;";
                 }
-                attestationParent.appendChild(attestationElement);
+                attestationElements.push(attestationElement);
             });
+            withShowMore(attestationElements, attestationParent, ATTEST_BEFORE_TRUNC);
