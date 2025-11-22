@@ -35,13 +35,13 @@ block content
                         td #{lemmaData.main.ipa}
                     tr
                         td Etymology
-                        td etym goes here
+                        td#details-etymology
                     tr
                         td Cognates
-                        td Something here?
+                        td#details-cognates
                     tr
                         td Descendants
-                        td offspring here
+                        td *offspring here*
             
             hr
             #details-meaning
@@ -74,16 +74,19 @@ block content
             // Number of entries/attestations to show before adding 'show more' button
             const SENSES_BEFORE_TRUNC = 0; // Show main entry, but no add'l senses
             const ATTEST_BEFORE_TRUNC = 5;
+            const ETYM_BEFORE_TRUNC = 1;
+            const COGN_BEFORE_TRUNC = 5;
 
             // Populate entries & attestations
-            let entries = !{JSON.stringify(lemmaData.senses)};
-            let mainEntry = !{JSON.stringify(lemmaData.main)};
+            let data = !{JSON.stringify(lemmaData)};
+            let entries = data.senses;
+            let mainEntry = data.main;
             let attestations = [];
             const senseParent = document.getElementById('senses');
             const attestationParent = document.getElementById('citations');
 
             // Function for populating content with 'show more' button
-            function withShowMore(elements, parent, before_hide, overrideID = null) {
+            function withShowMore(elements, parent, before_hide, do_inline = false, overrideID = null) {
                 if (!parent.id && !overrideID) {
                     console.error("Parent element has no id! " + parent);
                     return;
@@ -92,6 +95,9 @@ block content
                 
                 elements.slice(0, before_hide).forEach((elem) => {
                     parent.appendChild(elem);
+                    if (do_inline) {
+                        parent.innerHTML += ', ';
+                    }
                 })
 
                 // Add 'show more' button & hidden div with remaining entries
@@ -114,13 +120,50 @@ block content
                     let hiddenDiv = document.createElement('div');
                     hiddenDiv.id = hiddenDivId;
                     hiddenDiv.classList.add('hidden');
+                    if (do_inline) {
+                        hiddenDiv.classList.add = 'inline';
+                    }
                     
                     elements.slice(before_hide).forEach((elem) => {
                         hiddenDiv.appendChild(elem);
+                            if (do_inline) {
+                                hiddenDiv.innerHTML += ', ';
+                            }
                     });
+                    // Remove trailing comma
+                    hiddenDiv.innerHTML = hiddenDiv.innerHTML.replace(/, $/, '');
 
                     parent.appendChild(hiddenDiv);
+                } else {
+                    // Remove trailing comma
+                    parent.innerHTML = parent.innerHTML.replace(/, $/, '');
                 }
+            }
+
+            // Etymology field
+            if (data.etym) {
+                let etymElements = []
+                data.etym.forEach((etym) => {
+                    let etymDiv = document.createElement('div');
+                    etymDiv.classList.add('etym');
+                    etymDiv.innerHTML = `from PIE <i>${etym.rt_shape}</i> '${etym.rt_gloss_orig}' (${etym.ref_id})`
+                    etymElements.push(etymDiv);
+                })
+                withShowMore(etymElements, document.getElementById('details-etymology'), ETYM_BEFORE_TRUNC);
+            }
+            // Cognates field
+            if (data.cognates) {
+                let cognateElements = []
+                data.cognates.forEach((c) => {
+                    let cognateEl = document.createElement('span');
+                    cognateEl.classList.add('cognate');
+                    cognateEl.innerHTML = `<span style='text-transform: capitalize;'>${c.orig_lang_abbrev}</span> <i>${c.reflex}</i>`
+                    if (c.gloss_eng) {
+                        cognateEl.innerHTML += ` '${c.gloss_eng}'`
+                    }
+                    cognateElements.push(cognateEl);
+                })
+                withShowMore(cognateElements, document.getElementById('details-cognates'), COGN_BEFORE_TRUNC, true);
             }
 
             // Main sense entry

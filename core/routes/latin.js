@@ -5,13 +5,9 @@ const con = require('../mysqlConnection')
 const fs = require("fs");
 
 router.get('/', async (req, res) => {
-    console.log("Query:");
-    console.log(req.params);
     // Check available query parameters
     if (Object.hasOwn(req.query, 'search')) {
         let searchResults = await(getResults(req.query));
-        console.log("Results:");
-        console.log(searchResults);
         let related = searchResults.slice(1);
         // N.B. only handles exact lemma matches right now - will have to handle cases where sense_num is null in the future
         if (searchResults.length > 0) {
@@ -30,29 +26,23 @@ router.get('/', async (req, res) => {
 // Route for lemma definition
 router.get('/lemma/:lemma_id', async(req, res) => {
     // Render lemma data
-    console.log("Render lemma: " + req.params.lemma_id)
     let lemmaData = await getSenses(req.params.lemma_id);
-    console.log("DATA:");
-    console.log(lemmaData.main);
-    console.log(lemmaData.senses[0]);
     // Query for related lemmas
     lemmaData["related"] = await getRelated(lemmaData.main);
-
+    let etymData = await getEtym(lemmaData.main);
+    lemmaData["etym"] = etymData.etym;
+    lemmaData["cognates"] = etymData.cognates;
     console.log(lemmaData);
+
     res.render('latin', { lemmaData });
 });
 
 // Copied from results.js
 async function getResults(data){
     // Perform the database query to retrieve search results
-
-    // console.log("Search for:");
-    // console.log(data);
-
     // let pattern = "%" + data.search + "%"
     // Exact match only for now
     let pattern = data.search
-    console.log(pattern)
     //For now: select top result only
     const [results, ] = await con.promise().execute(
         `
@@ -61,7 +51,6 @@ async function getResults(data){
         `,
         [pattern]
     );
-    // console.log(results);
     return results;
 }
 
@@ -101,6 +90,42 @@ async function getRelated(entry_obj) {
     );
     return relatedEntries
 
+}
+
+async function getEtym(entry_obj) {
+    // Search for etymology data related to lexicon entry
+    const [lexRefEntries, ] = await con.promise().execute(
+        `
+        SELECT * FROM lex_ref_link
+        WHERE word_id = ?
+        `,
+        [entry_obj.lemma_id]
+    );
+    // Generate placeholders for all distinct rt_ref_link_ids returned
+    const rtRefIds = lexRefEntries.map((e) => e.rt_ref_link_id);
+    const rtRefIdPlaceholders = lexRefEntries.map(() => '?').join(',');
+    if (!lexRefEntries.length || !rtRefIds.length) {
+        return {'etym': null, 'cognates': null}
+    }
+
+    const [cognates, ] = await con.promise().execute(
+        `
+        SELECT orig_lang_abbrev, reflex, gloss_eng
+        FROM lex_ref_link
+        WHERE rt_ref_link_id IN (${rtRefIdPlaceholders})
+        `,
+        rtRefIds
+    );
+
+    const [etym, ] = await con.promise().execute(
+        `
+        SELECT * FROM rt_ref_link
+        WHERE rt_ref_link_id IN (${rtRefIdPlaceholders})
+        `,
+        rtRefIds
+    );
+
+    return {'etym': etym, 'cognates': cognates};
 }
 
 // // region helpers
