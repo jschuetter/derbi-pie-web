@@ -181,7 +181,7 @@ block content
             //Sense entries
             function createSenseDiv(sense) {
                 let entryDiv = document.createElement('div');
-                let indent_lvl = Math.floor((sense.sense_num.split('.').length - 1) / 2);
+                let indent_lvl = Math.floor((sense.sense_num.split('.').length) - 1);
                 entryDiv.classList.add('sense', 'indent-' + indent_lvl);
                 entryDiv.style = "margin-left:" + (INDENT_PX*indent_lvl) + "px;";
                 entryDiv.innerHTML += "<b>" + sense.sense_num.split('.').at(-1) + ". </b>"
