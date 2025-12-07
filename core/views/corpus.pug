@@ -1,0 +1,43 @@
+extends layout 
+
+block content 
+    // Search bar
+    .row.justify-content-left.align-items-top 
+        .col-lg-8
+            form#latin-search(method="GET", action="/corpus")
+                // On submit, calls endpoint '/latin' with query params {search: 'input field val', submit: 'normal'}
+                // viz. query params are equal to key-value pairs using 'name' and 'value' attributes of input & btn elements
+
+                .input-group.mb-3
+                    //label.input-group-text(for="search-input") Meaning
+                    //Populate with currently displayed lemma if exists
+                    input.form-control.alt-keys#search-input(type="text", name="search", placeholder="Enter a query", value=searchData ? searchData.query : '')
+                    #alt-letter-popover(style="display: none;")
+                    button.btn.btn-success(type="submit", name='submit', value="normal") Search
+
+    if docs
+        // Search results display
+        table#results-table
+            tr
+                th Title
+                th Author
+                th Language
+                th URN
+            each doc in docs
+                tr
+                    td.doc-title
+                        a(href="/corpus/text/" + doc.corpus_master_id) #{doc.title}
+                    td.doc-author
+                        a(href="/corpus/author/" + doc.author) #{doc.author}
+                    td.doc-language
+                        a(href="/corpus/lang/" + doc.language) #{doc.language}
+                    td.doc-urn
+                        a(href="https://scaife.perseus.org/reader/" + doc.urn) #{doc.urn}
+
+    else if docData
+        // Document display
+        #results #{JSON.stringify(docData)}
+    else
+        // Language select
+        #language-select
+            a(href="/corpus/lang/latin") Latin
