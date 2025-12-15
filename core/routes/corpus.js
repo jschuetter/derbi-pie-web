@@ -25,19 +25,38 @@ router.get('/', async (req, res) => {
 
 // Route for specific language
 router.get('/lang/:lang_name', async(req, res) => {
-    let docs = await(getLang(req.params.lang_name));
+    let [docs,] = await con.promise().execute(
+        `
+        SELECT * FROM corpus_master
+        WHERE language = ?;
+        `,
+        [req.params.lang_name]
+    );
     res.render('corpus', { docs });
 });
 // Route for specific author
 router.get('/author/:author_name', async(req, res) => {
-    let docs = await(getAuthor(req.params.author_name));
+    let [docs,] = await con.promise().execute(
+        `
+        SELECT * FROM corpus_master
+        WHERE author = ?;
+        `,
+        [req.params.author_name]
+    );
     res.render('corpus', { docs });
 });
 // Route for specific document
 router.get('/text/:corpus_id', async(req, res) => {
-    res.render('corpus');
-    // let docData = await(getDoc(req.params.corpus_id))
-    // res.render('corpus', {docData});
+    let [docData,] = await con.promise().execute(
+        `
+        SELECT * FROM corpus_master
+        WHERE corpus_master_id = ?;
+        `,
+        [req.params.corpus_id]
+    );
+    // Don't query all of these on page load - slows things down
+    let tokenData = await(getDocTokens(req.params.corpus_id, docData[0].language));
+    res.render('corpus', { docData, tokenData });
 });
 
 // Copied from results.js
@@ -55,27 +74,33 @@ async function getResults(data){
     );
     return results;
 }
-async function getLang(lang_str){
-    // Get all documents marked with language
-    const [results, ] = await con.promise().execute(
-        `
-        SELECT * FROM corpus_master
-        WHERE language = ?;
-        `,
-        [lang_str]
-    );
-    return results;
-}
-async function getAuthor(author_str){
-    // Get all documents marked with language
-    const [results, ] = await con.promise().execute(
-        `
-        SELECT * FROM corpus_master
-        WHERE author = ?;
-        `,
-        [author_str]
-    );
-    return results;
+
+// async function getDoc(doc_id){
+//     // Get data for document 
+//     const [results, ] = await con.promise().execute(
+//         `
+//         SELECT * FROM corpus_master
+//         WHERE corpus_master_id = ?;
+//         `,
+//         [doc_id]
+//     );
+//     return results;
+// }
+async function getDocTokens(doc_id, lang_name){
+    // Get data for document 
+    if (lang_name == 'latin') {
+        const [results, ] = await con.promise().execute(
+            `
+            SELECT * FROM corpus_latin_tokens
+            WHERE corpus_master_id = ?;
+            `,
+            [doc_id]
+        );
+        return results;
+    } else {
+        throw new Error("This language (" + lang_name + ") does not have a query method yet");
+        return null;
+    }
 }
 
 module.exports = router;
