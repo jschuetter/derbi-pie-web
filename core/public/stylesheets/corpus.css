@@ -1,0 +1,21 @@
+#results-table {
+    th, td {
+        padding: 0 0.5em;
+    }
+}
+
+#document-text {
+    td {
+        vertical-align: top;
+    }
+}
+.text-note {
+    text-align: right;
+    font-weight: bold;
+    padding-right: 1em;
+}
+.text-line {
+    /* Hanging indent */
+    padding-left: 2em;
+    text-indent: -2em;
+}

@@ -22,7 +22,7 @@ block content
                 th Title
                 th Author
                 th Language
-                th URN
+                th Source
             each doc in docs
                 tr
                     td.doc-title
@@ -31,12 +31,15 @@ block content
                         a(href="/corpus/author/" + doc.author) #{doc.author}
                     td.doc-language
                         a(href="/corpus/lang/" + doc.language) #{doc.language}
-                    td.doc-urn
-                        a(href="https://scaife.perseus.org/reader/" + doc.urn) #{doc.urn}
+                    td.doc-src
+                        a(href=doc.source_url) #{doc.source}
 
-    else if docData
+    else if docData && textHTML
         // Document display
-        #results #{JSON.stringify(docData)}
+        table#document-text !{textHTML}
+        if tokenData
+            // Parse text here, fill in tokens?
+            #tokenData
     else
         // Language select
         #language-select

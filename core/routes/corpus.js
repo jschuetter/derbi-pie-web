@@ -54,9 +54,20 @@ router.get('/text/:corpus_id', async(req, res) => {
         `,
         [req.params.corpus_id]
     );
+    // Fetch document text
+    console.log("Fetch URL: " + docData[0].source_url);
+    let text = await fetch(docData[0].source_url).then(response => {
+        if (!response.ok) {
+            throw new Error(`File retrieval error, status: ${response.status}`);
+        }
+        return response.text()
+    });
+    // Preprocess text
+    textHTML = processDoc(text, docData[0].source);
+    // Parse text & link tokens here?
     // Don't query all of these on page load - slows things down
     let tokenData = await(getDocTokens(req.params.corpus_id, docData[0].language));
-    res.render('corpus', { docData, tokenData });
+    res.render('corpus', { docData, textHTML, tokenData });
 });
 
 // Copied from results.js
@@ -100,6 +111,60 @@ async function getDocTokens(doc_id, lang_name){
     } else {
         throw new Error("This language (" + lang_name + ") does not have a query method yet");
         return null;
+    }
+}
+
+function processDoc(text, src_name) {
+    if (src_name == 'tesserae') {
+        let preprocessedHTML = '';
+        // Break text into lines, annotate with book & line numbers
+        let lines = text.split('\n');
+        console.log(text);
+        console.log(lines);
+        const regex = /^<[^>]*?(\d+(?:\-\d+)?)(?:\.([a-zA-Z0-9]+))?(?:\.(\d+))?>\s*(.*)$/
+        lines.forEach(element => {
+            if (element.trim().length == 0) {
+                return;
+            }
+            // Parse out book, chapter, & line number annotations
+            let bookNum, chapterNum, lineNum, lineText;
+            const m = element.match(regex);
+            if (m) {
+                // If 3 digits
+                if (m.length == 5) {
+                    [, bookNum, chapterNum, lineNum, lineText] = m;
+                } else if (m.length == 4) {
+                    // If 2 digits
+                    [,bookNum, lineNum, lineText] = m;
+                } else {
+                    // Only one digit
+                    [,lineNum, lineText] = m;
+                }
+            } else {
+                throw new Error("Could not find line annotation in line " + element);
+            }
+
+            let attrs = '';
+            let note = '';
+            if (bookNum) { 
+                attrs += `book=${bookNum} `;
+                note += `${bookNum}.`;
+            }
+            if (chapterNum) {
+                attrs += `chapter=${chapterNum} `;
+                note += `${chapterNum}.`;
+            }
+            if (lineNum) {
+                attrs += `line=${lineNum}`;
+                note += `${lineNum}`;
+            }
+            preprocessedHTML += `<tr> <td class='text-note'>${note}</td> <td class='text-line' ${attrs}> ${lineText}</td> </tr>\n`;
+            // preprocessedHTML += `<div ${attrs}> ${element} </div>\n`;
+            console.log(element);
+        });
+        return preprocessedHTML;
+    } else {
+        throw new Error(`This source (${src_name}) does not have a parser yet`);
     }
 }
 
