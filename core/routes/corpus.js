@@ -131,14 +131,11 @@ function processDoc(text, src_name) {
             const m = element.match(regex);
             if (m) {
                 // If 3 digits
-                if (m.length == 5) {
+                if (typeof(m[3]) !== 'undefined') {
                     [, bookNum, chapterNum, lineNum, lineText] = m;
-                } else if (m.length == 4) {
-                    // If 2 digits
-                    [,bookNum, lineNum, lineText] = m;
                 } else {
-                    // Only one digit
-                    [,lineNum, lineText] = m;
+                    // If 2 digits or less
+                    [, bookNum, lineNum, , lineText] = m;
                 }
             } else {
                 throw new Error("Could not find line annotation in line " + element);
@@ -159,8 +156,6 @@ function processDoc(text, src_name) {
                 note += `${lineNum}`;
             }
             preprocessedHTML += `<tr> <td class='text-note'>${note}</td> <td class='text-line' ${attrs}> ${lineText}</td> </tr>\n`;
-            // preprocessedHTML += `<div ${attrs}> ${element} </div>\n`;
-            console.log(element);
         });
         return preprocessedHTML;
     } else {
