@@ -63,10 +63,10 @@ router.get('/text/:corpus_id', async(req, res) => {
         return response.text()
     });
     // Preprocess text
-    textHTML = processDoc(text, docData[0].source);
-    // Parse text & link tokens here?
     // Don't query all of these on page load - slows things down
     let tokenData = await(getDocTokens(req.params.corpus_id, docData[0].language));
+    textHTML = processDoc(text, docData[0].source, tokenData);
+    // Parse text & link tokens here?
     res.render('corpus', { docData, textHTML, tokenData });
 });
 
@@ -114,13 +114,12 @@ async function getDocTokens(doc_id, lang_name){
     }
 }
 
-function processDoc(text, src_name) {
+function processDoc(text, src_name, token_data) {
     if (src_name == 'tesserae') {
         let preprocessedHTML = '';
         // Break text into lines, annotate with book & line numbers
         let lines = text.split('\n');
-        console.log(text);
-        console.log(lines);
+        let tokenIdx = 0;
         const regex = /^<[^>]*?(\d+(?:\-\d+)?)(?:\.([a-zA-Z0-9]+))?(?:\.(\d+))?>\s*(.*)$/
         lines.forEach(element => {
             if (element.trim().length == 0) {
@@ -155,6 +154,12 @@ function processDoc(text, src_name) {
                 attrs += `line=${lineNum}`;
                 note += `${lineNum}`;
             }
+
+            let tokens = lineText.split(' ');
+            tokens.forEach(token => {
+                token = token.strip(' ,.“”');
+            });
+            
             preprocessedHTML += `<tr> <td class='text-note'>${note}</td> <td class='text-line' ${attrs}> ${lineText}</td> </tr>\n`;
         });
         return preprocessedHTML;
