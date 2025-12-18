@@ -8,14 +8,28 @@
     td {
         vertical-align: top;
     }
-}
-.text-note {
-    text-align: right;
-    font-weight: bold;
-    padding-right: 1em;
-}
-.text-line {
-    /* Hanging indent */
-    padding-left: 2em;
-    text-indent: -2em;
+    .text-note {
+        text-align: right;
+        font-weight: bold;
+        padding-right: 1em;
+    }
+    .text-line {
+        /* Hanging indent */
+        padding-left: 2em;
+        text-indent: -2em;
+    }
+
+    /* Styling for selectable tokens */
+    & button[data-id] {
+        /* Reset button styling to default */
+        background: unset;
+        border: unset;
+        padding: unset; 
+        margin: unset;
+
+        &:hover {
+            color: royalblue;
+            text-decoration: royalblue 0.1em solid underline;
+        }
+    }
 }
