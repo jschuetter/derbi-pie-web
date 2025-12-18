@@ -36,19 +36,23 @@ block content
 
     else if docData && docSections && sectionTextJSON
         // Document display
-        #document-sections 
-            ul.section-list
+        
+        h2#section-hdr #{docData[0].title} #{section}
+        
+        #document-sections.collapsible
+            button.collapse-btn Sections
+            ul#section-list.collapsible-content
                 each s in docSections
                     if s.chapters
                         li.collapsible
-                            button.book-btn #[strong #{s.book}]
+                            button.book-btn.collapse-btn #[strong #{s.book}]
                             ul.collapsible-content
                                 each chapter in s.chapters
                                     li
-                                        button.chap-btn #{chapter}
+                                        a.chap-btn(href=`?section=${s.book}/${chapter}`) #{chapter}
                     else 
                         li
-                            button.book-btn #[strong #{s.book}]
+                            a.book-btn(href=`?section=${s.book}`) #[strong #{s.book}]
 
         table#document-text
             - var sectionText = typeof sectionTextJSON === 'string' ? JSON.parse(sectionTextJSON) : sectionTextJSON
@@ -66,7 +70,7 @@ block content
                         //- #{Object.keys(lineText).join('')}
         script.
             //- Load onclick method for collapsible sections
-            var collapsible = document.querySelectorAll('.collapsible > .book-btn');
+            var collapsible = document.querySelectorAll('.collapsible > .collapse-btn');
             collapsible.forEach((el) => {
                 el.addEventListener('click', function() {
                     this.parentElement.classList.toggle('active');

@@ -91,7 +91,6 @@ router.get('/text/:corpus_id', async(req, res) => {
             });
         }
     });
-    console.log(docSections);
     
     // If no section, download first
     if (typeof(section) == 'undefined') {
@@ -103,6 +102,7 @@ router.get('/text/:corpus_id', async(req, res) => {
     }
     // Get section text
     let sectionURL = `${docURL}/${section}.json`;
+    console.log("Section URL: " + sectionURL);
 
     let sectionTextJSON = await fetch(sectionURL).then(response => {
             if (!response.ok) {
@@ -110,11 +110,12 @@ router.get('/text/:corpus_id', async(req, res) => {
             }
             return response.text();
         });
-    // Don't query all of these on page load - slows things down
-    // let tokenData = await(getDocTokens(req.params.corpus_id, docData[0].language));
-    // Parse text & link tokens here?
 
-    res.render('corpus', { docData, docSections, sectionTextJSON });
+    console.log(docData);
+    console.log(docSections);
+    // console.log(sectionTextJSON);
+
+    res.render('corpus', { docData, docSections, sectionTextJSON, section });
 });
 
 // Copied from results.js

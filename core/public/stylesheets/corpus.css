@@ -3,23 +3,26 @@
         padding: 0 0.5em;
     }
 }
+
+/* Collapsible list styling */
+.collapsible {
+    list-style: square;
+
+    & > .collapsible-content {
+        display: none;
+    }
+}
+.collapsible.active {
+    & > .collapsible-content {
+        display: block;
+    }
+}
+
+
 #document-sections {
     /* Styling for section list */
-    .section-list {
+    #section-list {
         background-color: lightgray;
-        
-        .collapsible {
-            list-style: square;
-
-            .collapsible-content {
-                display: none;
-            }
-        }
-        .collapsible.active {
-            .collapsible-content {
-                display: block;
-            }
-        }
     }
 }
 #document-text {
