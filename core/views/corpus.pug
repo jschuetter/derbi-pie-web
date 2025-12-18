@@ -36,7 +36,7 @@ block content
 
     else if docData && docSections && sectionTextJSON
         // Document display
-        
+
         h2#section-hdr #{docData[0].title} #{section}
         
         #document-sections.collapsible
@@ -68,13 +68,45 @@ block content
                                 else
                                     span #{token.token}
                         //- #{Object.keys(lineText).join('')}
+        #token-data
+            button#token-close-btn x
+            #token-data-table
+            // Display token data here (dynamically populated using JS)
         script.
             //- Load onclick method for collapsible sections
             var collapsible = document.querySelectorAll('.collapsible > .collapse-btn');
             collapsible.forEach((el) => {
-                el.addEventListener('click', function() {
-                    this.parentElement.classList.toggle('active');
+                el.addEventListener('click', (e) => {
+                    e.target.parentElement.classList.toggle('active');
                 })
+            });
+
+            //- Load onclick method for selectible tokens
+            var textDiv = document.getElementById('document-text');
+            console.log(textDiv);
+            textDiv.addEventListener('click', (e) => {
+                let id = e.target.getAttribute('data-id');
+                let corpus_id = '#{docData[0].corpus_master_id}';
+                if (typeof(id) !== 'undefined') {
+                    //- Load token data for id
+                    const fetch_path = `/tokens/latin/${corpus_id}/${id}`;
+                    console.log("Token path: " + fetch_path);
+                    let data = fetch(fetch_path).then((response) => {
+                        return response.json();
+                    }).then((json) => {
+                        console.log(json.data[0]);
+                        let tokenDataDiv = document.getElementById('token-data');
+                        let tokenDataTable = document.getElementById('token-data-table');
+                        tokenDataTable.textContent = json.data[0] ? JSON.stringify(json.data[0]) : 'Token data not found.';
+                        tokenDataDiv.style.display = 'flex';
+                        //- HANDLE DATA HERE -- CALL DISPLAY METHOD
+                    });
+                }
+            });
+            var tokenCloseBtn = document.getElementById('token-close-btn');
+            tokenCloseBtn.addEventListener('click', (e) => {
+                let tokenDataDiv = document.getElementById('token-data');
+                tokenDataDiv.style.display = 'none'
             });
     else
         // Language select

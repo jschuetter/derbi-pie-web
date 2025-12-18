@@ -23,6 +23,7 @@ const aboutRoutes = express.Router().get('/', (req, res) => {res.render('about')
 
 const latinRouter = require('./routes/latin');
 const corpusRouter = require('./routes/corpus');
+const tokensRouter = require('./routes/token');
 
 const app = express();
 
@@ -117,6 +118,7 @@ app.use('/search', isAuthenticated, searchRoutes);
 app.use('/results', isAuthenticated, resultsRoutes);
 app.use('/instructions', isAuthenticated, instructionsRouter);
 app.use('/corpus', corpusRouter);
+app.use('/tokens', tokensRouter);
 app.use('/latin', latinRouter);
 // app.use('/download', isAuthenticated, downloadRouter);
 
