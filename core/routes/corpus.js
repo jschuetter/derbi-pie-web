@@ -46,7 +46,16 @@ router.get('/author/:author_name', async(req, res) => {
     res.render('corpus', { docs });
 });
 // Route for specific document
+const DOC_REPO_OWNER = 'jschuetter';
+const DOC_REPO_NAME = 'derbi-pie-dev';
+const DOC_REPO_PATH_PFX = 'corpus/texts/';
+const DOC_REPO_BRANCH = 'main';
+const REPO_BASE_URL = `https://raw.githubusercontent.com/${DOC_REPO_OWNER}/${DOC_REPO_NAME}/refs/heads/${DOC_REPO_BRANCH}/${DOC_REPO_PATH_PFX}`;
+const STRUCT_FILE = '/sections.json';
 router.get('/text/:corpus_id', async(req, res) => {
+    // Optional query parameters for specifying section
+    let section = req.query.section;
+
     let [docData,] = await con.promise().execute(
         `
         SELECT * FROM corpus_master
@@ -54,20 +63,56 @@ router.get('/text/:corpus_id', async(req, res) => {
         `,
         [req.params.corpus_id]
     );
-    // Fetch document text
-    console.log("Fetch URL: " + docData[0].source_url);
-    let text = await fetch(docData[0].source_url).then(response => {
+    // Fetch document text sections
+    // could be either 1 (book only) or 2 (book and chapter) dir levels
+    const docURL = REPO_BASE_URL + docData[0].source_uri;
+    const structURL = docURL + STRUCT_FILE;
+    console.log("Fetch URL: " + structURL);
+    let docSections = await fetch(structURL).then(response => {
         if (!response.ok) {
-            throw new Error(`File retrieval error, status: ${response.status}`);
+            throw new Error(`File retrieval error, status: ${response.statusText}\nURL:${sectionsURL}`);
         }
-        return response.text()
+        return response.json();
     });
-    // Preprocess text
+
+    // Sort docSections on book number first, then chapter number
+    // docSections.sort((x, y) => {
+    //     xParts = x.split("-");
+    //     yParts = y.split("-");
+    //     if (xParts[0] == yParts[0]) {
+    //         // Test for chapter numbers
+    //         if (xParts.length > 1 && yParts.length > 1) {
+    //             if (xParts[1] > yParts[1]) { return 1; }
+    //             else if (xParts[1] < yParts[1]) { return -1; }
+    //             else { return 0; }
+    //         } else { return 0; }  // If no chapter numbers, values are equal
+    //     } else if (xParts[0] > yParts[0]) { return 1; }
+    //     else { return -1; }
+    // });
+    console.log(docSections);
+    
+    // If no section, download first
+    if (typeof(section) == 'undefined') {
+        if (docSections[0].chapters) {
+            section = `${docSections[0].book}/${docSections[0].chapters[0]}`;
+        } else {
+            section = docSections[0].book;
+        }
+    }
+    // Get section text
+    let sectionURL = `${docURL}/${section}.json`;
+
+    let sectionTextJSON = await fetch(sectionURL).then(response => {
+            if (!response.ok) {
+                throw new Error(`File retrieval error, status: ${response.statusText}\nURL:${sectionURL}`);
+            }
+            return response.text();
+        });
     // Don't query all of these on page load - slows things down
-    let tokenData = await(getDocTokens(req.params.corpus_id, docData[0].language));
-    textHTML = processDoc(text, docData[0].source, tokenData);
+    // let tokenData = await(getDocTokens(req.params.corpus_id, docData[0].language));
     // Parse text & link tokens here?
-    res.render('corpus', { docData, textHTML, tokenData });
+
+    res.render('corpus', { docData, docSections, sectionTextJSON });
 });
 
 // Copied from results.js
@@ -86,17 +131,6 @@ async function getResults(data){
     return results;
 }
 
-// async function getDoc(doc_id){
-//     // Get data for document 
-//     const [results, ] = await con.promise().execute(
-//         `
-//         SELECT * FROM corpus_master
-//         WHERE corpus_master_id = ?;
-//         `,
-//         [doc_id]
-//     );
-//     return results;
-// }
 async function getDocTokens(doc_id, lang_name){
     // Get data for document 
     if (lang_name == 'latin') {
@@ -111,60 +145,6 @@ async function getDocTokens(doc_id, lang_name){
     } else {
         throw new Error("This language (" + lang_name + ") does not have a query method yet");
         return null;
-    }
-}
-
-function processDoc(text, src_name, token_data) {
-    if (src_name == 'tesserae') {
-        let preprocessedHTML = '';
-        // Break text into lines, annotate with book & line numbers
-        let lines = text.split('\n');
-        let tokenIdx = 0;
-        const regex = /^<[^>]*?(\d+(?:\-\d+)?)(?:\.([a-zA-Z0-9]+))?(?:\.(\d+))?>\s*(.*)$/
-        lines.forEach(element => {
-            if (element.trim().length == 0) {
-                return;
-            }
-            // Parse out book, chapter, & line number annotations
-            let bookNum, chapterNum, lineNum, lineText;
-            const m = element.match(regex);
-            if (m) {
-                // If 3 digits
-                if (typeof(m[3]) !== 'undefined') {
-                    [, bookNum, chapterNum, lineNum, lineText] = m;
-                } else {
-                    // If 2 digits or less
-                    [, bookNum, lineNum, , lineText] = m;
-                }
-            } else {
-                throw new Error("Could not find line annotation in line " + element);
-            }
-
-            let attrs = '';
-            let note = '';
-            if (bookNum) { 
-                attrs += `book=${bookNum} `;
-                note += `${bookNum}.`;
-            }
-            if (chapterNum) {
-                attrs += `chapter=${chapterNum} `;
-                note += `${chapterNum}.`;
-            }
-            if (lineNum) {
-                attrs += `line=${lineNum}`;
-                note += `${lineNum}`;
-            }
-
-            let tokens = lineText.split(' ');
-            tokens.forEach(token => {
-                token = token.strip(' ,.“”');
-            });
-            
-            preprocessedHTML += `<tr> <td class='text-note'>${note}</td> <td class='text-line' ${attrs}> ${lineText}</td> </tr>\n`;
-        });
-        return preprocessedHTML;
-    } else {
-        throw new Error(`This source (${src_name}) does not have a parser yet`);
     }
 }
 
