@@ -37,14 +37,18 @@ block content
     else if docData && docSections && sectionTextJSON
         // Document display
         #document-sections 
-            each s in docSections
-                ul
-                    li
-                        strong #{s.book}
-                        if s.chapters
-                            ul
+            ul.section-list
+                each s in docSections
+                    if s.chapters
+                        li.collapsible
+                            button.book-btn #[strong #{s.book}]
+                            ul.collapsible-content
                                 each chapter in s.chapters
-                                    li #{chapter}
+                                    li
+                                        button.chap-btn #{chapter}
+                    else 
+                        li
+                            button.book-btn #[strong #{s.book}]
 
         table#document-text
             - var sectionText = typeof sectionTextJSON === 'string' ? JSON.parse(sectionTextJSON) : sectionTextJSON
@@ -60,10 +64,14 @@ block content
                                 else
                                     span #{token.token}
                         //- #{Object.keys(lineText).join('')}
-
-        if tokenData
-            // Parse text here, fill in tokens?
-            #tokenData
+        script.
+            //- Load onclick method for collapsible sections
+            var collapsible = document.querySelectorAll('.collapsible > .book-btn');
+            collapsible.forEach((el) => {
+                el.addEventListener('click', function() {
+                    this.parentElement.classList.toggle('active');
+                })
+            });
     else
         // Language select
         #language-select

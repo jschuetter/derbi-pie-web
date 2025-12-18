@@ -3,8 +3,27 @@
         padding: 0 0.5em;
     }
 }
+#document-sections {
+    /* Styling for section list */
+    .section-list {
+        background-color: lightgray;
+        
+        .collapsible {
+            list-style: square;
 
+            .collapsible-content {
+                display: none;
+            }
+        }
+        .collapsible.active {
+            .collapsible-content {
+                display: block;
+            }
+        }
+    }
+}
 #document-text {
+    /* Styling for document */
     td {
         vertical-align: top;
     }
