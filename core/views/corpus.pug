@@ -34,9 +34,31 @@ block content
                     td.doc-src
                         a(href=doc.source_url) #{doc.source}
 
-    else if docData && textHTML
+    else if docData && docSections && sectionTextJSON
         // Document display
-        table#document-text !{textHTML}
+        #document-sections 
+            each s in docSections
+                ul
+                    li
+                        strong #{s.book}
+                        ul
+                            each chapter in s.chapters
+                                li #{chapter}
+        table#document-text
+            - var sectionText = typeof sectionTextJSON === 'string' ? JSON.parse(sectionTextJSON) : sectionTextJSON
+            //- p #{JSON.stringify(sectionText)}
+            each linesObj, noteKey in sectionText
+                - var lineText = typeof linesObj === 'string' ? JSON.parse(linesObj) : linesObj
+                    tr
+                        td.text-note #{noteKey}
+                        td.text-line 
+                            each token in lineText 
+                                if token.value !== null && token.token !== '"'
+                                    button(data-id=token.value) #{token.token}
+                                else 
+                                    span #{token.token}
+                        //- #{Object.keys(lineText).join('')}
+
         if tokenData
             // Parse text here, fill in tokens?
             #tokenData
