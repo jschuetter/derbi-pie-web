@@ -76,19 +76,21 @@ router.get('/text/:corpus_id', async(req, res) => {
     });
 
     // Sort docSections on book number first, then chapter number
-    // docSections.sort((x, y) => {
-    //     xParts = x.split("-");
-    //     yParts = y.split("-");
-    //     if (xParts[0] == yParts[0]) {
-    //         // Test for chapter numbers
-    //         if (xParts.length > 1 && yParts.length > 1) {
-    //             if (xParts[1] > yParts[1]) { return 1; }
-    //             else if (xParts[1] < yParts[1]) { return -1; }
-    //             else { return 0; }
-    //         } else { return 0; }  // If no chapter numbers, values are equal
-    //     } else if (xParts[0] > yParts[0]) { return 1; }
-    //     else { return -1; }
-    // });
+    docSections.sort((x, y) => {
+        a = parseInt(x.book);
+        b = parseInt(y.book);
+        return a - b; 
+    });
+    // Sort chapters
+    docSections.forEach((book) => {
+        if (book.chapters !== null) {
+            book.chapters.sort((x,y) => {
+                a = parseInt(x.split('-')[-1]);
+                b = parseInt(y.split('-')[-1]);
+                return a - b;
+            });
+        }
+    });
     console.log(docSections);
     
     // If no section, download first
