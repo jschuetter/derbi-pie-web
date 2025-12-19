@@ -45,14 +45,14 @@ block content
                 each s in docSections
                     if s.chapters
                         li.collapsible
-                            button.book-btn.collapse-btn #[strong #{s.book}]
+                            button.book-btn.collapse-btn #{s.book}
                             ul.collapsible-content
                                 each chapter in s.chapters
                                     li
                                         a.chap-btn(href=`?section=${s.book}/${chapter}`) #{chapter}
                     else 
                         li
-                            a.book-btn(href=`?section=${s.book}`) #[strong #{s.book}]
+                            a.book-btn(href=`?section=${s.book}`) #{s.book}
 
         table#document-text
             - var sectionText = typeof sectionTextJSON === 'string' ? JSON.parse(sectionTextJSON) : sectionTextJSON
@@ -70,8 +70,12 @@ block content
                         //- #{Object.keys(lineText).join('')}
         #token-data
             button#token-close-btn x
-            #token-data-table
             // Display token data here (dynamically populated using JS)
+            h3#token-header
+            div#token-err
+            div #[em#token-ipa ] / #[span#token-syll ]
+            table#token-data-table
+
         script.
             //- Load onclick method for collapsible sections
             var collapsible = document.querySelectorAll('.collapsible > .collapse-btn');
@@ -80,6 +84,19 @@ block content
                     e.target.parentElement.classList.toggle('active');
                 })
             });
+
+            function appendTableRow(table, title, data) {
+                let row = document.createElement('tr');
+                let hdr = document.createElement('td');
+                hdr.textContent = title;
+                hdr.classList.add('token-data-name');
+                row.appendChild(hdr);
+                let val = document.createElement('td');
+                val.textContent = data;
+                val.classList.add('token-data-value');
+                row.appendChild(val);
+                table.appendChild(row);
+            }
 
             //- Load onclick method for selectible tokens
             var textDiv = document.getElementById('document-text');
@@ -94,10 +111,37 @@ block content
                     let data = fetch(fetch_path).then((response) => {
                         return response.json();
                     }).then((json) => {
-                        console.log(json.data[0]);
+                        let data = json.data[0];
+                        console.log(data);
+
                         let tokenDataDiv = document.getElementById('token-data');
                         let tokenDataTable = document.getElementById('token-data-table');
-                        tokenDataTable.textContent = json.data[0] ? JSON.stringify(json.data[0]) : 'Token data not found.';
+                        if (data) {
+                            //- Reset fields
+                            document.getElementById('token-err').textContent = '';
+                            tokenDataTable.innerHTML = '';
+                            
+                            document.getElementById('token-header').textContent = data.surf_form;
+                            document.getElementById('token-ipa').textContent = data.phonetic_transcription;
+                            document.getElementById('token-syll').textContent = data.syllables;
+                            appendTableRow(tokenDataTable, 'Part of speech', data.pos);
+                            appendTableRow(tokenDataTable, 'Stem', data.stem);
+
+                            if (data.features) {
+                                console.log("Features: " + data.features);
+                                //- Quote features to allow JSON parsing
+                                let features = data.features.replace(/([{\s,])([A-Za-z0-9_]+)\s*:/g, '$1"$2":');  // Fix key
+                                features = features.replace(/:\s*\[([A-Za-z_][A-Za-z0-9_,\s]*)\]/g, ': "$1"');  // Fix value
+                                console.log("Features (fixed): " + features);
+                                let featJSON = JSON.parse(features);
+                                for (const key in featJSON) {
+                                    appendTableRow(tokenDataTable, key, featJSON[key]);
+                                }
+                            }
+
+                        } else {
+                            document.getElementById('token-err').textContent = 'No token data found.';
+                        }
                         tokenDataDiv.style.display = 'flex';
                         //- HANDLE DATA HERE -- CALL DISPLAY METHOD
                     });

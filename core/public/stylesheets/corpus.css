@@ -24,6 +24,10 @@
     #section-list {
         background-color: lightgray;
     }
+    
+    .book-btn {
+        font-weight: bold;
+    }
 }
 #document-text {
     /* Styling for document */
@@ -57,19 +61,23 @@
 }
 
 #token-data {
+    display: none;
+
     z-index: 10;
     position: absolute;
     top: 10vh;
     right: 0;
-    display: none;
+
     background-color: lightsteelblue;
     border: 1pt solid slategray;
     border-radius: 1em;
+    
+    padding: 1em;
     width: 40vw;
     height: 80vh;
-    /* CHANGE THESE AFTER FORMATTING IS IMPROVED */
-    text-wrap: wrap;
-    word-break: break-all;
+
+    flex-direction: column;
+    word-break: break-word;
 
     #token-close-btn {
         position: absolute;
@@ -78,8 +86,10 @@
         margin: 0.2em;
     }
 
-    /* #token-data-table {
-        position: absolute;
-        top: 2em;
-    } */
+    #token-data-table {
+        margin-top: 0.7em;
+        .token-data-name {
+            font-weight: bold;
+        }
+    }
 }
